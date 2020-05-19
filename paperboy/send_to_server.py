@@ -475,7 +475,7 @@ def main():
 
     parser.add_argument(
         u'--private-key',
-        u'-i',
+        u'-k',
         default=setts.get(u'private-key', None),
         help=u'Path to private-key file in openssh format'
     )
