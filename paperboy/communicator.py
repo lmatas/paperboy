@@ -17,7 +17,7 @@ class Communicator(object):
         self.port = port
         self.user = user
         self.password = password
-        self.public_key_path = public_key_path
+        self.private_key_path = private_key_path
         self._active_client = None
 
 
@@ -165,7 +165,7 @@ class SFTP(Communicator):
                     password=self.password,
                     compress=True
                 )    
-                
+
         except ssh_exception.AuthenticationException:
             logger.error(
                 u'Fail while connecting through SSH. Check your creadentials.')
