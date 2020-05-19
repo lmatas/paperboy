@@ -126,7 +126,7 @@ def remove_last_slash(path):
 class Delivery(object):
 
     def __init__(self, source_type, cisis_dir, scilista, source_dir, destiny_dir,
-            compatibility_mode, server, server_type, port, user, password, serial_source_dir=None):
+            compatibility_mode, server, server_type, port, user, password, private_key_path, serial_source_dir=None):
         self._scilista = parse_scilista(scilista)
         self.scilista = scilista
         self.cisis_dir = remove_last_slash(cisis_dir)
@@ -137,7 +137,7 @@ class Delivery(object):
         self.compatibility_mode = compatibility_mode
 
         if str(server_type) == 'sftp':
-            self.client = SFTP(server, int(port), user, password)
+            self.client = SFTP(server, int(port), user, password, private_key_path)
         elif str(server_type) == 'ftp':
             self.client = FTP(server, int(port), user, password)
         else:
@@ -474,6 +474,13 @@ def main():
     )
 
     parser.add_argument(
+        u'--private-key',
+        u'-i',
+        default=setts.get(u'private-key', None),
+        help=u'Path to private-key file in openssh format'
+    )
+
+    parser.add_argument(
         u'--logging_level',
         u'-l',
         default=u'DEBUG',
@@ -497,6 +504,7 @@ def main():
         args.port,
         args.user,
         args.password,
+        args.private_key,
         args.serial_source_dir
     )
     delivery.run()

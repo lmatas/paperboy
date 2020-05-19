@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 
 class Communicator(object):
 
-    def __init__(self, host, port, user, password):
+    def __init__(self, host, port, user, password, private_key_path=None):
 
         self.host = host
         self.port = port
         self.user = user
         self.password = password
+        self.public_key_path = public_key_path
         self._active_client = None
 
 
@@ -130,12 +131,41 @@ class SFTP(Communicator):
             self.ssh_client.set_missing_host_key_policy(
                 paramiko.AutoAddPolicy()
             )
-            self.ssh_client.connect(
-                self.host,
-                username=self.user,
-                password=self.password,
-                compress=True
-            )
+
+            # if private_key_path is provided
+            if self.private_key_path != None:
+                
+                try: # try to open key as unencrypted
+                    private_key = paramiko.RSAKey.from_private_key_file(self.private_key_path)
+                except ssh_exception.PasswordRequiredException:
+
+                    # ask passphrase to user
+                    passphrase = input('Enter passphrase for private encripted key: ')
+
+                    # try again with the provided passphrase
+                    try:
+                        private_key = paramiko.RSAKey.from_private_key_file(self.private_key_path, passphrase)
+                    except ssh_exception.SSHException:
+                        logger.error(
+                            u'Fail while connecting through SSH. Check your private key and passphrase')
+                        return None
+
+                self.ssh_client.connect(
+                    self.host,
+                    username=self.user,
+                    pkey=private_key,
+                    compress=True
+                )
+
+            # login with username and password
+            else:
+                self.ssh_client.connect(
+                    self.host,
+                    username=self.user,
+                    password=self.password,
+                    compress=True
+                )    
+                
         except ssh_exception.AuthenticationException:
             logger.error(
                 u'Fail while connecting through SSH. Check your creadentials.')
